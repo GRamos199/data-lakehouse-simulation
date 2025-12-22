@@ -3,6 +3,12 @@
 .env.local
 .env.*.local
 
+# Airflow
+airflow_home/
+airflow-webserver.pid
+airflow.db
+*.log
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
