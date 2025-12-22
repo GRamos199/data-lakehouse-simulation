@@ -26,20 +26,23 @@ OPENWEATHER_API_KEY=your_api_key_here
 python3 scripts/run_pipeline.py
 ```
 
-### Run with Apache Airflow (Recommended)
+### Run with Apache Airflow + Docker (Recommended)
 
 ```bash
-# Setup Airflow
-bash scripts/setup_airflow.sh
+# Start with Docker (includes webserver + scheduler)
+docker-compose up
 
-# Terminal 1: Start webserver
-airflow webserver -p 8080
-
-# Terminal 2: Start scheduler
-airflow scheduler
-
-# Access: http://localhost:8080 (admin/admin)
+# Access: http://localhost:8081 (admin/admin)
 ```
+
+**Logs en vivo**:
+```bash
+docker logs -f data-lakehouse-airflow
+```
+
+**📚 Ver documentación sobre ejecución y logs**:
+- [AIRFLOW_QUICK_REFERENCE.md](AIRFLOW_QUICK_REFERENCE.md) - Resumen visual (2 min)
+- [AIRFLOW_EXECUTION_GUIDE.md](AIRFLOW_EXECUTION_GUIDE.md) - Guía detallada (10 min)
 
 ## 📊 Architecture
 

@@ -21,19 +21,19 @@ from scripts.run_pipeline import DataLakehousePipeline
 def run_ingestion():
     """Execute data ingestion stage."""
     pipeline = DataLakehousePipeline()
-    pipeline.stage_1_ingestion()
+    pipeline.run_ingestion_stage()
 
 
 def run_transformation():
     """Execute data transformation stage."""
     pipeline = DataLakehousePipeline()
-    pipeline.stage_2_transformation()
+    pipeline.run_transformation_stage()
 
 
 def run_analytics():
     """Execute analytics stage."""
     pipeline = DataLakehousePipeline()
-    pipeline.stage_3_analytics()
+    pipeline.run_analytics_stage()
 
 
 # DAG configuration
