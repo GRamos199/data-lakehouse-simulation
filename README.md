@@ -40,8 +40,8 @@ A complete local data lakehouse implementation with three data layers (raw, clea
 
 ```mermaid
 graph TD
-    A["🔴 RAW LAYER<br/>data/raw/<br/><br/>OpenWeather API JSON<br/>Sample CSV files"] -->|Transform| B["🟢 CLEAN LAYER<br/>data/clean/<br/><br/>Normalized & deduplicated<br/>CSV/Parquet format"]
-    B -->|Aggregate| C["🔵 ANALYTICS LAYER<br/>data/analytics/<br/><br/>DuckDB database<br/>SQL views & reports"]
+    A["RAW LAYER<br/>data/raw/<br/><br/>OpenWeather API JSON<br/>Sample CSV files"] -->|Transform| B["CLEAN LAYER<br/>data/clean/<br/><br/>Normalized & deduplicated<br/>CSV/Parquet format"]
+    B -->|Aggregate| C["ANALYTICS LAYER<br/>data/analytics/<br/><br/>DuckDB database<br/>SQL views & reports"]
     
 ```
 
