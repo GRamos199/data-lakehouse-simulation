@@ -14,12 +14,12 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from scripts.generate_sample_data import generate_sample_weather_data
+from scripts.generate_sample_data import generate_sample_csv
 
 
 def generate_new_sample_data():
     """Generate fresh sample data for testing."""
-    generate_sample_weather_data()
+    generate_sample_csv()
     return "Sample data generated successfully"
 
 

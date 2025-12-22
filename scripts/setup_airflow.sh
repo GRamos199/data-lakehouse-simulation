@@ -3,7 +3,7 @@
 
 set -e
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 AIRFLOW_HOME="$PROJECT_ROOT/airflow_home"
 VENV_PATH="$PROJECT_ROOT/venv"
 
@@ -25,7 +25,7 @@ source "$VENV_PATH/bin/activate"
 
 # Install/upgrade Airflow
 echo "📥 Installing Apache Airflow..."
-pip install -q apache-airflow==2.7.3 apache-airflow-providers-python==4.4.0
+pip install -q apache-airflow==2.9.3
 
 # Create Airflow home directory
 echo "📁 Setting up Airflow directories..."

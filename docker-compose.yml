@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  airflow:
+    build: .
+    container_name: data-lakehouse-airflow
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./dags:/app/dags
+      - ./scripts:/app/scripts
+      - ./data:/app/data
+      - ./outputs:/app/outputs
+      - airflow-logs:/airflow/logs
+    environment:
+      - AIRFLOW_HOME=/airflow
+      - AIRFLOW__CORE__DAGS_FOLDER=/app/dags
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////airflow/airflow.db
+    networks:
+      - data-lakehouse
+
+volumes:
+  airflow-logs:
+
+networks:
+  data-lakehouse:
+    driver: bridge
