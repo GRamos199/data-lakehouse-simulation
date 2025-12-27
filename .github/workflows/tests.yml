@@ -38,11 +38,11 @@ jobs:
       
       - name: Check code style with black
         run: |
-          black --check src/ scripts/ dags/ tests/
+          black --check --quiet src/ scripts/ dags/ tests/
       
       - name: Check import sorting with isort
         run: |
-          isort --check-only src/ scripts/ dags/ tests/
+          isort --check-only --quiet src/ scripts/ dags/ tests/
       
       - name: Run unit tests with pytest
         run: |

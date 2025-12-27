@@ -4,11 +4,14 @@ Maps to cloud architecture: Snowflake / Tableau / BI Tools
 """
 
 import logging
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 import duckdb
+
 from config.config import DUCKDB_PATH
 
 logger = logging.getLogger(__name__)
+
 
 class AnalyticsQueryEngine:
     """Executes analytical queries against the data warehouse."""
@@ -116,7 +119,7 @@ class AnalyticsQueryEngine:
     def generate_analytics_report(self) -> Dict[str, Any]:
         """Generate complete analytics report."""
         self.connect()
-        
+
         try:
             report = {
                 "summary": self.get_weather_summary(),
