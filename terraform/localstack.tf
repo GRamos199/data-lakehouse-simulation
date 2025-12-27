@@ -1,18 +1,6 @@
 # LocalStack Docker Container Configuration
 # Provides local AWS service emulation for development/testing
-
-terraform {
-  required_providers {
-    docker = {
-      source  = "kreuzwerker/docker"
-      version = "~> 3.0"
-    }
-  }
-}
-
-provider "docker" {
-  host = "unix:///var/run/docker.sock"
-}
+# (required_providers and docker provider are configured in main.tf)
 
 # ============================================================================
 # LOCALSTACK CONTAINER (Local AWS Emulation)
@@ -60,24 +48,8 @@ resource "docker_container" "localstack" {
     retries  = 5
   }
 
-  restart_policy = "always"
-
   # Capability to access Docker daemon
   capabilities {
     add = ["NET_ADMIN"]
   }
-}
-
-# ============================================================================
-# OUTPUTS
-# ============================================================================
-
-output "localstack_endpoint" {
-  value       = "http://localhost:4566"
-  description = "LocalStack API endpoint"
-}
-
-output "localstack_container_id" {
-  value       = docker_container.localstack.id
-  description = "LocalStack container ID"
 }
