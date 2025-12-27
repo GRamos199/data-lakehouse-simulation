@@ -162,3 +162,4 @@ Thumbs.db
 *.tmp
 *.temp
 *.bak
+terraform/.terraform/
