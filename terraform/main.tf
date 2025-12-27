@@ -72,6 +72,9 @@ locals {
 resource "aws_s3_bucket" "raw_data" {
   bucket = "${var.project_name}-raw-${var.environment}"
   
+  # Ensure LocalStack is ready before creating resources
+  depends_on = [docker_container.localstack]
+  
   tags = merge(
     local.tags,
     {
@@ -85,6 +88,8 @@ resource "aws_s3_bucket" "raw_data" {
 resource "aws_s3_bucket" "clean_data" {
   bucket = "${var.project_name}-clean-${var.environment}"
   
+  depends_on = [docker_container.localstack]
+  
   tags = merge(
     local.tags,
     {
@@ -97,8 +102,8 @@ resource "aws_s3_bucket" "clean_data" {
 # Analytics layer bucket
 resource "aws_s3_bucket" "analytics_data" {
   bucket = "${var.project_name}-analytics-${var.environment}"
-  
-  tags = merge(
+    depends_on = [docker_container.localstack]
+    tags = merge(
     local.tags,
     {
       Name   = "${var.project_name}-analytics"
@@ -142,6 +147,8 @@ resource "aws_dynamodb_table" "pipeline_history" {
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "execution_id"
   range_key      = "timestamp"
+  
+  depends_on = [docker_container.localstack]
 
   attribute {
     name = "execution_id"
@@ -167,6 +174,8 @@ resource "aws_dynamodb_table" "data_quality_metrics" {
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "dataset_id"
   range_key      = "check_timestamp"
+  
+  depends_on = [docker_container.localstack]
 
   attribute {
     name = "dataset_id"
@@ -196,6 +205,8 @@ resource "aws_cloudwatch_event_rule" "daily_pipeline" {
   description         = "Triggers data lakehouse pipeline daily at 2 AM UTC"
   schedule_expression = "cron(0 2 * * ? *)"
   
+  depends_on = [docker_container.localstack]
+  
   tags = local.tags
 }
 
@@ -205,6 +216,8 @@ resource "aws_cloudwatch_event_rule" "daily_pipeline" {
 
 resource "aws_sns_topic" "pipeline_notifications" {
   name = "${var.project_name}-pipeline-notifications"
+  
+  depends_on = [docker_container.localstack]
   
   tags = merge(
     local.tags,
@@ -216,6 +229,8 @@ resource "aws_sns_topic" "pipeline_notifications" {
 
 resource "aws_sns_topic" "data_quality_alerts" {
   name = "${var.project_name}-data-quality-alerts"
+  
+  depends_on = [docker_container.localstack]
   
   tags = merge(
     local.tags,
@@ -234,6 +249,8 @@ resource "aws_cloudwatch_log_group" "pipeline_logs" {
   name              = "/aws/${var.project_name}/pipeline"
   retention_in_days = 7
   
+  depends_on = [docker_container.localstack]
+  
   tags = merge(
     local.tags,
     {
@@ -246,6 +263,8 @@ resource "aws_cloudwatch_log_group" "pipeline_logs" {
 resource "aws_cloudwatch_log_group" "data_validation_logs" {
   name              = "/aws/${var.project_name}/data-validation"
   retention_in_days = 7
+  
+  depends_on = [docker_container.localstack]
   
   tags = merge(
     local.tags,
@@ -261,6 +280,8 @@ resource "aws_cloudwatch_log_group" "data_validation_logs" {
 
 resource "aws_iam_role" "pipeline_execution_role" {
   name = "${var.project_name}-pipeline-execution-role"
+
+  depends_on = [docker_container.localstack]
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

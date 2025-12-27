@@ -20,7 +20,9 @@ resource "docker_container" "localstack" {
     "SERVICES=s3,dynamodb,sns,sqs,cloudwatch,logs,events,lambda,iam",
     "DEBUG=1",
     "DATA_DIR=/tmp/localstack/data",
-    "DOCKER_HOST=unix:///var/run/docker.sock"
+    "DOCKER_HOST=unix:///var/run/docker.sock",
+    "EAGER_SERVICE_LOADING=true",
+    "HOSTNAME=localhost"
   ]
 
   # Port mappings
@@ -40,16 +42,20 @@ resource "docker_container" "localstack" {
     container_path = "/tmp/localstack/data"
   }
 
-  # Health check
+  # Health check - longer startup period and more retries
   healthcheck {
     test     = ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
-    interval = "5s"
-    timeout  = "2s"
-    retries  = 5
+    interval = "3s"
+    timeout  = "3s"
+    retries  = 20
+    start_period = "30s"
   }
 
   # Capability to access Docker daemon
   capabilities {
     add = ["NET_ADMIN"]
   }
+
+  # Ensure container always runs
+  must_run = true
 }

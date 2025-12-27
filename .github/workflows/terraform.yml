@@ -38,6 +38,19 @@ jobs:
           cd terraform
           terraform init
       
+      - name: Wait for LocalStack to be ready
+        run: |
+          for i in {1..60}; do
+            if curl -s http://localhost:4566/_localstack/health | grep -q '"services"'; then
+              echo "✓ LocalStack is ready"
+              exit 0
+            fi
+            echo "Waiting for LocalStack... ($i/60)"
+            sleep 2
+          done
+          echo "✗ LocalStack failed to start"
+          exit 1
+      
       - name: Terraform Validate
         run: |
           cd terraform
