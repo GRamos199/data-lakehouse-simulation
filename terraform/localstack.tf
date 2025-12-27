@@ -9,7 +9,7 @@
 resource "null_resource" "localstack_health_check" {
   # Only run health check when using LocalStack
   count = var.use_localstack ? 1 : 0
-  
+
   provisioner "local-exec" {
     command = "bash -c '${file("${path.module}/scripts/wait-localstack.sh")}'"
   }
@@ -24,15 +24,15 @@ resource "null_resource" "localstack_health_check" {
 resource "docker_image" "localstack" {
   # Only pull image when using LocalStack
   count = var.use_localstack ? 1 : 0
-  
-  name          = "localstack/localstack:latest"
-  keep_locally  = false
+
+  name         = "localstack/localstack:latest"
+  keep_locally = false
 }
 
 resource "docker_container" "localstack" {
   # Only create container when using LocalStack
   count = var.use_localstack ? 1 : 0
-  
+
   name  = "data-lakehouse-localstack"
   image = docker_image.localstack[0].image_id
 
@@ -67,10 +67,10 @@ resource "docker_container" "localstack" {
 
   # Health check - longer startup period and more retries
   healthcheck {
-    test     = ["CMD", "curl", "-f", "http://127.0.0.1:4566/_localstack/health"]
-    interval = "2s"
-    timeout  = "3s"
-    retries  = 30
+    test         = ["CMD", "curl", "-f", "http://127.0.0.1:4566/_localstack/health"]
+    interval     = "2s"
+    timeout      = "3s"
+    retries      = 30
     start_period = "45s"
   }
 

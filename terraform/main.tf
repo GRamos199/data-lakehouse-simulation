@@ -4,7 +4,7 @@
 
 terraform {
   required_version = ">= 1.0"
-  
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -23,30 +23,30 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
-  
+
   # LocalStack configuration (local AWS emulation)
   access_key = var.use_localstack ? "test" : null
   secret_key = var.use_localstack ? "test" : null
-  
+
   # Skip validation for LocalStack
   skip_credentials_validation = var.use_localstack
-  skip_metadata_api_check      = var.use_localstack
-  skip_requesting_account_id   = var.use_localstack
-  
+  skip_metadata_api_check     = var.use_localstack
+  skip_requesting_account_id  = var.use_localstack
+
   dynamic "endpoints" {
     for_each = var.use_localstack ? [1] : []
     content {
-      s3             = "http://127.0.0.1:4566"
-      dynamodb       = "http://127.0.0.1:4566"
-      sns            = "http://127.0.0.1:4566"
-      sqs            = "http://127.0.0.1:4566"
-      cloudwatch     = "http://127.0.0.1:4566"
-      logs           = "http://127.0.0.1:4566"
-      events         = "http://127.0.0.1:4566"
-      iam            = "http://127.0.0.1:4566"
-      lambda         = "http://127.0.0.1:4566"
-      glue           = "http://127.0.0.1:4566"
-      stepfunctions  = "http://127.0.0.1:4566"
+      s3            = "http://127.0.0.1:4566"
+      dynamodb      = "http://127.0.0.1:4566"
+      sns           = "http://127.0.0.1:4566"
+      sqs           = "http://127.0.0.1:4566"
+      cloudwatch    = "http://127.0.0.1:4566"
+      logs          = "http://127.0.0.1:4566"
+      events        = "http://127.0.0.1:4566"
+      iam           = "http://127.0.0.1:4566"
+      lambda        = "http://127.0.0.1:4566"
+      glue          = "http://127.0.0.1:4566"
+      stepfunctions = "http://127.0.0.1:4566"
     }
   }
 }
@@ -75,15 +75,15 @@ locals {
 # Raw data layer bucket
 resource "aws_s3_bucket" "raw_data" {
   bucket = "${var.project_name}-raw-${var.environment}"
-  
+
   # Ensure LocalStack is ready before creating resources
   depends_on = [null_resource.localstack_health_check]
-  
+
   tags = merge(
     local.tags,
     {
-      Name   = "${var.project_name}-raw"
-      Layer  = "raw"
+      Name  = "${var.project_name}-raw"
+      Layer = "raw"
     }
   )
 }
@@ -91,27 +91,27 @@ resource "aws_s3_bucket" "raw_data" {
 # Clean data layer bucket
 resource "aws_s3_bucket" "clean_data" {
   bucket = "${var.project_name}-clean-${var.environment}"
-  
+
   depends_on = [null_resource.localstack_health_check]
-  
+
   tags = merge(
     local.tags,
     {
-      Name   = "${var.project_name}-clean"
-      Layer  = "clean"
+      Name  = "${var.project_name}-clean"
+      Layer = "clean"
     }
   )
 }
 
 # Analytics layer bucket
 resource "aws_s3_bucket" "analytics_data" {
-  bucket = "${var.project_name}-analytics-${var.environment}"
-    depends_on = [null_resource.localstack_health_check]
-    tags = merge(
+  bucket     = "${var.project_name}-analytics-${var.environment}"
+  depends_on = [null_resource.localstack_health_check]
+  tags = merge(
     local.tags,
     {
-      Name   = "${var.project_name}-analytics"
-      Layer  = "analytics"
+      Name  = "${var.project_name}-analytics"
+      Layer = "analytics"
     }
   )
 }
@@ -119,7 +119,7 @@ resource "aws_s3_bucket" "analytics_data" {
 # Enable versioning on all buckets
 resource "aws_s3_bucket_versioning" "raw_versioning" {
   bucket = aws_s3_bucket.raw_data.id
-  
+
   versioning_configuration {
     status = "Enabled"
   }
@@ -127,7 +127,7 @@ resource "aws_s3_bucket_versioning" "raw_versioning" {
 
 resource "aws_s3_bucket_versioning" "clean_versioning" {
   bucket = aws_s3_bucket.clean_data.id
-  
+
   versioning_configuration {
     status = "Enabled"
   }
@@ -135,7 +135,7 @@ resource "aws_s3_bucket_versioning" "clean_versioning" {
 
 resource "aws_s3_bucket_versioning" "analytics_versioning" {
   bucket = aws_s3_bucket.analytics_data.id
-  
+
   versioning_configuration {
     status = "Enabled"
   }
@@ -147,11 +147,11 @@ resource "aws_s3_bucket_versioning" "analytics_versioning" {
 
 # Pipeline execution history
 resource "aws_dynamodb_table" "pipeline_history" {
-  name           = "${var.project_name}-pipeline-history"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "execution_id"
-  range_key      = "timestamp"
-  
+  name         = "${var.project_name}-pipeline-history"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "execution_id"
+  range_key    = "timestamp"
+
   depends_on = [null_resource.localstack_health_check]
 
   attribute {
@@ -174,11 +174,11 @@ resource "aws_dynamodb_table" "pipeline_history" {
 
 # Data quality metrics
 resource "aws_dynamodb_table" "data_quality_metrics" {
-  name           = "${var.project_name}-data-quality"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "dataset_id"
-  range_key      = "check_timestamp"
-  
+  name         = "${var.project_name}-data-quality"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "dataset_id"
+  range_key    = "check_timestamp"
+
   depends_on = [null_resource.localstack_health_check]
 
   attribute {
@@ -208,9 +208,9 @@ resource "aws_cloudwatch_event_rule" "daily_pipeline" {
   name                = "${var.project_name}-daily-pipeline"
   description         = "Triggers data lakehouse pipeline daily at 2 AM UTC"
   schedule_expression = "cron(0 2 * * ? *)"
-  
+
   depends_on = [null_resource.localstack_health_check]
-  
+
   tags = local.tags
 }
 
@@ -220,9 +220,9 @@ resource "aws_cloudwatch_event_rule" "daily_pipeline" {
 
 resource "aws_sns_topic" "pipeline_notifications" {
   name = "${var.project_name}-pipeline-notifications"
-  
+
   depends_on = [null_resource.localstack_health_check]
-  
+
   tags = merge(
     local.tags,
     {
@@ -233,9 +233,9 @@ resource "aws_sns_topic" "pipeline_notifications" {
 
 resource "aws_sns_topic" "data_quality_alerts" {
   name = "${var.project_name}-data-quality-alerts"
-  
+
   depends_on = [null_resource.localstack_health_check]
-  
+
   tags = merge(
     local.tags,
     {
@@ -252,9 +252,9 @@ resource "aws_sns_topic" "data_quality_alerts" {
 resource "aws_cloudwatch_log_group" "pipeline_logs" {
   name              = "/aws/${var.project_name}/pipeline"
   retention_in_days = 7
-  
+
   depends_on = [null_resource.localstack_health_check]
-  
+
   tags = merge(
     local.tags,
     {
@@ -267,9 +267,9 @@ resource "aws_cloudwatch_log_group" "pipeline_logs" {
 resource "aws_cloudwatch_log_group" "data_validation_logs" {
   name              = "/aws/${var.project_name}/data-validation"
   retention_in_days = 7
-  
+
   depends_on = [null_resource.localstack_health_check]
-  
+
   tags = merge(
     local.tags,
     {

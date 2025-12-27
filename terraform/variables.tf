@@ -20,7 +20,7 @@ variable "environment" {
   description = "Environment name (local, dev, staging, prod)"
   type        = string
   default     = "local"
-  
+
   validation {
     condition     = contains(["local", "dev", "staging", "prod"], var.environment)
     error_message = "Environment must be one of: local, dev, staging, prod."
@@ -31,7 +31,7 @@ variable "project_name" {
   description = "Project name for resource naming"
   type        = string
   default     = "data-lakehouse"
-  
+
   validation {
     condition     = can(regex("^[a-z][a-z0-9-]*$", var.project_name))
     error_message = "Project name must start with lowercase letter and contain only lowercase letters, numbers, and hyphens."
