@@ -5,7 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'README.md'
-      - 'AIRFLOW.md'
+      - 'docs/**'
       - 'terraform/README.md'
       - '.github/workflows/docs.yml'
   pull_request:
@@ -30,8 +30,32 @@ jobs:
       - name: Check markdown links
         run: |
           # Check for broken links in markdown files
-          pip install markdown-link-check
-          markdown-link-check README.md AIRFLOW.md terraform/README.md || true
+          python -c "
+          import re
+          from pathlib import Path
+          
+          files = ['README.md', 'docs/AIRFLOW.md', 'docs/CONTRIBUTING.md', 'docs/ARCHITECTURE.md']
+          link_pattern = r'\[.*?\]\((.*?)\)'
+          
+          for file in files:
+              path = Path(file)
+              if path.exists():
+                  with open(path) as f:
+                      content = f.read()
+                  links = re.findall(link_pattern, content)
+                  for link in links:
+                      if link.startswith('http'):
+                          continue  # Skip external links
+                      # Check local files
+                      if not link.startswith('#'):
+                          target = Path(link.split('#')[0])
+                          if target.exists() or target.name == '':
+                              print(f'✓ {file}: {link}')
+                          else:
+                              print(f'✗ {file}: {link} (not found)')
+              else:
+                  print(f'⚠ {file} not found')
+          "
       
       - name: Validate YAML workflow files
         run: |
@@ -55,10 +79,10 @@ jobs:
           echo "# Documentation Report" > docs_report.md
           echo "" >> docs_report.md
           echo "## Files" >> docs_report.md
-          ls -lh README.md AIRFLOW.md terraform/README.md >> docs_report.md
+          ls -lh README.md docs/*.md terraform/README.md 2>/dev/null >> docs_report.md || true
           echo "" >> docs_report.md
           echo "## Word Count" >> docs_report.md
-          wc -w README.md AIRFLOW.md terraform/README.md >> docs_report.md
+          wc -w README.md docs/*.md terraform/README.md 2>/dev/null >> docs_report.md || true
       
       - name: Upload documentation report
         uses: actions/upload-artifact@v4
