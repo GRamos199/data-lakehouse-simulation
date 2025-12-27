@@ -7,11 +7,14 @@
 # ============================================================================
 
 resource "null_resource" "localstack_health_check" {
+  # Only run health check when using LocalStack
+  count = var.use_localstack ? 1 : 0
+  
   provisioner "local-exec" {
     command = "bash -c '${file("${path.module}/scripts/wait-localstack.sh")}'"
   }
 
-  depends_on = [docker_container.localstack]
+  depends_on = [docker_container.localstack[0]]
 }
 
 # ============================================================================
@@ -19,13 +22,19 @@ resource "null_resource" "localstack_health_check" {
 # ============================================================================
 
 resource "docker_image" "localstack" {
+  # Only pull image when using LocalStack
+  count = var.use_localstack ? 1 : 0
+  
   name          = "localstack/localstack:latest"
   keep_locally  = false
 }
 
 resource "docker_container" "localstack" {
+  # Only create container when using LocalStack
+  count = var.use_localstack ? 1 : 0
+  
   name  = "data-lakehouse-localstack"
-  image = docker_image.localstack.image_id
+  image = docker_image.localstack[0].image_id
 
   # LocalStack services to enable
   env = [
