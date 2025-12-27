@@ -1,0 +1,99 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'README.md'
+      - 'AIRFLOW.md'
+      - 'terraform/README.md'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install sphinx sphinx-rtd-theme
+      
+      - name: Check markdown links
+        run: |
+          # Check for broken links in markdown files
+          pip install markdown-link-check
+          markdown-link-check README.md AIRFLOW.md terraform/README.md || true
+      
+      - name: Validate YAML workflow files
+        run: |
+          pip install pyyaml
+          python -c "
+          import yaml
+          import glob
+          
+          for workflow in glob.glob('.github/workflows/*.yml'):
+              try:
+                  with open(workflow) as f:
+                      yaml.safe_load(f)
+                  print(f'✓ {workflow} is valid')
+              except Exception as e:
+                  print(f'✗ {workflow} failed: {e}')
+                  exit(1)
+          "
+      
+      - name: Generate documentation report
+        run: |
+          echo "# Documentation Report" > docs_report.md
+          echo "" >> docs_report.md
+          echo "## Files" >> docs_report.md
+          ls -lh README.md AIRFLOW.md terraform/README.md >> docs_report.md
+          echo "" >> docs_report.md
+          echo "## Word Count" >> docs_report.md
+          wc -w README.md AIRFLOW.md terraform/README.md >> docs_report.md
+      
+      - name: Upload documentation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-report
+          path: docs_report.md
+
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install radon pylint
+      
+      - name: Calculate code metrics
+        run: |
+          echo "# Code Metrics" > metrics.txt
+          echo "" >> metrics.txt
+          echo "## Cyclomatic Complexity" >> metrics.txt
+          radon cc src/ scripts/ dags/ -s >> metrics.txt || true
+          echo "" >> metrics.txt
+          echo "## Maintainability Index" >> metrics.txt
+          radon mi src/ scripts/ dags/ >> metrics.txt || true
+      
+      - name: Upload metrics
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-metrics
+          path: metrics.txt

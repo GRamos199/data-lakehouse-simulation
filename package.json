@@ -1,0 +1,33 @@
+{
+  "name": "data-lakehouse-simulation",
+  "version": "1.0.0",
+  "description": "A complete local data lakehouse implementation with three data layers and Apache Airflow orchestration",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/data-lakehouse-simulation.git"
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "keywords": [
+    "data-lakehouse",
+    "etl",
+    "airflow",
+    "duckdb",
+    "data-engineering"
+  ],
+  "engines": {
+    "python": ">=3.9"
+  },
+  "scripts": {
+    "test": "pytest tests/ -v",
+    "lint": "flake8 src/ scripts/ dags/ && black --check src/ scripts/ dags/",
+    "format": "black src/ scripts/ dags/ && isort src/ scripts/ dags/",
+    "pipeline": "python scripts/run_pipeline.py",
+    "docker:build": "docker build -t data-lakehouse:latest .",
+    "docker:run": "docker-compose up",
+    "terraform:init": "cd terraform && terraform init",
+    "terraform:plan": "cd terraform && terraform plan -var='use_localstack=true'",
+    "terraform:apply": "cd terraform && terraform apply -var='use_localstack=true'",
+    "docs": "python -m mkdocs serve"
+  }
+}

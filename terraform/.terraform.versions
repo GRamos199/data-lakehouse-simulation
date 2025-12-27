@@ -1,0 +1,7 @@
+TERRAFORM_VERSION=1.0+
+AWS_PROVIDER_VERSION=~> 5.0
+DOCKER_PROVIDER_VERSION=~> 3.0
+
+# For local development with LocalStack
+LOCALSTACK_ENDPOINT=http://localhost:4566
+LOCALSTACK_REGION=us-east-1
