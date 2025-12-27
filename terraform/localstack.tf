@@ -8,22 +8,7 @@
 
 resource "null_resource" "localstack_health_check" {
   provisioner "local-exec" {
-    command = <<-EOT
-      echo "Waiting for LocalStack to become healthy..."
-      for i in {1..120}; do
-        RESPONSE=$$(curl -s -w "%%{http_code}" -o /tmp/health.json http://127.0.0.1:4566/_localstack/health 2>/dev/null || echo "000")
-        if [ "$$RESPONSE" = "200" ]; then
-          echo "✓ LocalStack is healthy!"
-          cat /tmp/health.json | head -c 200
-          echo ""
-          exit 0
-        fi
-        echo "Waiting for LocalStack... (attempt $$i/120, status: $$RESPONSE)"
-        sleep 1
-      done
-      echo "⚠ Health check timed out, but continuing..."
-      exit 0
-    EOT
+    command = "bash -c '${file("${path.module}/scripts/wait-localstack.sh")}'"
   }
 
   depends_on = [docker_container.localstack]
