@@ -14,6 +14,10 @@ terraform {
       source  = "kreuzwerker/docker"
       version = "~> 3.0"
     }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.0"
+    }
   }
 }
 
@@ -32,17 +36,17 @@ provider "aws" {
   dynamic "endpoints" {
     for_each = var.use_localstack ? [1] : []
     content {
-      s3             = "http://localhost:4566"
-      dynamodb       = "http://localhost:4566"
-      sns            = "http://localhost:4566"
-      sqs            = "http://localhost:4566"
-      cloudwatch     = "http://localhost:4566"
-      logs           = "http://localhost:4566"
-      events         = "http://localhost:4566"
-      iam            = "http://localhost:4566"
-      lambda         = "http://localhost:4566"
-      glue           = "http://localhost:4566"
-      stepfunctions  = "http://localhost:4566"
+      s3             = "http://127.0.0.1:4566"
+      dynamodb       = "http://127.0.0.1:4566"
+      sns            = "http://127.0.0.1:4566"
+      sqs            = "http://127.0.0.1:4566"
+      cloudwatch     = "http://127.0.0.1:4566"
+      logs           = "http://127.0.0.1:4566"
+      events         = "http://127.0.0.1:4566"
+      iam            = "http://127.0.0.1:4566"
+      lambda         = "http://127.0.0.1:4566"
+      glue           = "http://127.0.0.1:4566"
+      stepfunctions  = "http://127.0.0.1:4566"
     }
   }
 }
@@ -73,7 +77,7 @@ resource "aws_s3_bucket" "raw_data" {
   bucket = "${var.project_name}-raw-${var.environment}"
   
   # Ensure LocalStack is ready before creating resources
-  depends_on = [docker_container.localstack]
+  depends_on = [null_resource.localstack_health_check]
   
   tags = merge(
     local.tags,
@@ -88,7 +92,7 @@ resource "aws_s3_bucket" "raw_data" {
 resource "aws_s3_bucket" "clean_data" {
   bucket = "${var.project_name}-clean-${var.environment}"
   
-  depends_on = [docker_container.localstack]
+  depends_on = [null_resource.localstack_health_check]
   
   tags = merge(
     local.tags,
@@ -102,7 +106,7 @@ resource "aws_s3_bucket" "clean_data" {
 # Analytics layer bucket
 resource "aws_s3_bucket" "analytics_data" {
   bucket = "${var.project_name}-analytics-${var.environment}"
-    depends_on = [docker_container.localstack]
+    depends_on = [null_resource.localstack_health_check]
     tags = merge(
     local.tags,
     {
@@ -148,7 +152,7 @@ resource "aws_dynamodb_table" "pipeline_history" {
   hash_key       = "execution_id"
   range_key      = "timestamp"
   
-  depends_on = [docker_container.localstack]
+  depends_on = [null_resource.localstack_health_check]
 
   attribute {
     name = "execution_id"
@@ -175,7 +179,7 @@ resource "aws_dynamodb_table" "data_quality_metrics" {
   hash_key       = "dataset_id"
   range_key      = "check_timestamp"
   
-  depends_on = [docker_container.localstack]
+  depends_on = [null_resource.localstack_health_check]
 
   attribute {
     name = "dataset_id"
@@ -205,7 +209,7 @@ resource "aws_cloudwatch_event_rule" "daily_pipeline" {
   description         = "Triggers data lakehouse pipeline daily at 2 AM UTC"
   schedule_expression = "cron(0 2 * * ? *)"
   
-  depends_on = [docker_container.localstack]
+  depends_on = [null_resource.localstack_health_check]
   
   tags = local.tags
 }
@@ -217,7 +221,7 @@ resource "aws_cloudwatch_event_rule" "daily_pipeline" {
 resource "aws_sns_topic" "pipeline_notifications" {
   name = "${var.project_name}-pipeline-notifications"
   
-  depends_on = [docker_container.localstack]
+  depends_on = [null_resource.localstack_health_check]
   
   tags = merge(
     local.tags,
@@ -230,7 +234,7 @@ resource "aws_sns_topic" "pipeline_notifications" {
 resource "aws_sns_topic" "data_quality_alerts" {
   name = "${var.project_name}-data-quality-alerts"
   
-  depends_on = [docker_container.localstack]
+  depends_on = [null_resource.localstack_health_check]
   
   tags = merge(
     local.tags,
@@ -249,7 +253,7 @@ resource "aws_cloudwatch_log_group" "pipeline_logs" {
   name              = "/aws/${var.project_name}/pipeline"
   retention_in_days = 7
   
-  depends_on = [docker_container.localstack]
+  depends_on = [null_resource.localstack_health_check]
   
   tags = merge(
     local.tags,
@@ -264,7 +268,7 @@ resource "aws_cloudwatch_log_group" "data_validation_logs" {
   name              = "/aws/${var.project_name}/data-validation"
   retention_in_days = 7
   
-  depends_on = [docker_container.localstack]
+  depends_on = [null_resource.localstack_health_check]
   
   tags = merge(
     local.tags,
@@ -281,7 +285,7 @@ resource "aws_cloudwatch_log_group" "data_validation_logs" {
 resource "aws_iam_role" "pipeline_execution_role" {
   name = "${var.project_name}-pipeline-execution-role"
 
-  depends_on = [docker_container.localstack]
+  depends_on = [null_resource.localstack_health_check]
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

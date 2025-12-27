@@ -3,6 +3,33 @@
 # (required_providers and docker provider are configured in main.tf)
 
 # ============================================================================
+# LOCALSTACK HEALTH CHECK (Wait for services to be ready)
+# ============================================================================
+
+resource "null_resource" "localstack_health_check" {
+  provisioner "local-exec" {
+    command = <<-EOT
+      echo "Waiting for LocalStack to become healthy..."
+      for i in {1..120}; do
+        RESPONSE=$$(curl -s -w "%%{http_code}" -o /tmp/health.json http://127.0.0.1:4566/_localstack/health 2>/dev/null || echo "000")
+        if [ "$$RESPONSE" = "200" ]; then
+          echo "✓ LocalStack is healthy!"
+          cat /tmp/health.json | head -c 200
+          echo ""
+          exit 0
+        fi
+        echo "Waiting for LocalStack... (attempt $$i/120, status: $$RESPONSE)"
+        sleep 1
+      done
+      echo "⚠ Health check timed out, but continuing..."
+      exit 0
+    EOT
+  }
+
+  depends_on = [docker_container.localstack]
+}
+
+# ============================================================================
 # LOCALSTACK CONTAINER (Local AWS Emulation)
 # ============================================================================
 
@@ -22,13 +49,15 @@ resource "docker_container" "localstack" {
     "DATA_DIR=/tmp/localstack/data",
     "DOCKER_HOST=unix:///var/run/docker.sock",
     "EAGER_SERVICE_LOADING=true",
-    "HOSTNAME=localhost"
+    "HOSTNAME=localhost",
+    "LOCALSTACK_API_FORWARDING=true"
   ]
 
-  # Port mappings
+  # Port mappings - explicit IPv4
   ports {
     internal = 4566
     external = 4566
+    ip       = "127.0.0.1"
   }
 
   # Volumes for persistence
@@ -44,11 +73,11 @@ resource "docker_container" "localstack" {
 
   # Health check - longer startup period and more retries
   healthcheck {
-    test     = ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
-    interval = "3s"
+    test     = ["CMD", "curl", "-f", "http://127.0.0.1:4566/_localstack/health"]
+    interval = "2s"
     timeout  = "3s"
-    retries  = 20
-    start_period = "30s"
+    retries  = 30
+    start_period = "45s"
   }
 
   # Capability to access Docker daemon
