@@ -69,7 +69,7 @@ class DataLakehousePipeline:
                 / "sample_historical.csv"
             )
             if sample_csv.exists():
-                success, path = csv_manager.ingest_csv(str(sample_csv))
+                success, path = csv_manager.ingest_csv_file(str(sample_csv))
                 if success:
                     logger.info(f"✓ CSV ingestion successful: {path}")
                     self.execution_log["stages"]["ingestion"]["csv_files_ingested"] = 1
